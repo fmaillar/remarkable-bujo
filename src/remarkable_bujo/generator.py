@@ -348,7 +348,7 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
                 month_weeks.append(key)
 
         x = weeks_x
-        c.setFont(FONT, 15)
+        c.setFont(FONT_BOLD, 17)
         for key in month_weeks:
             week_label = key.label
             week_w = 48
@@ -362,7 +362,7 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
             )
 
             log_x = x + week_w + 2
-            c.setFont(FONT_BOLD, 13)
+            c.setFont(FONT_BOLD, 16)
             c.drawString(log_x, y - 25, "R")
             c.linkRect(
                 "",
@@ -371,7 +371,7 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
                 relative=0,
                 thickness=0,
             )
-            c.setFont(FONT, 15)
+            c.setFont(FONT_BOLD, 17)
             x += 84
 
         c.setFont(FONT, 12)
