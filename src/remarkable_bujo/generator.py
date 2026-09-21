@@ -773,18 +773,58 @@ def _draw_reflection(c: canvas.Canvas, year: int, month: int) -> None:
     _finish_page(c)
 
 
-def _draw_index_page(c: canvas.Canvas, year: int, *, title: str, destination: str) -> None:
-    _new_page(c, destination)
-    _draw_header(c, title, str(year))
+def _draw_index_page(
+    c: canvas.Canvas,
+    year: int,
+    *,
+    title: str,
+    destination: str,
+    page: int = 1,
+) -> None:
+    page_destination = destination if page == 1 else f"{destination}-{page}"
+    _new_page(c, page_destination)
+
+    first = 1 if page == 1 else 21
+    last = 20 if page == 1 else 40
+    _draw_header(c, title, f"{year} · {first:02d}-{last:02d}")
 
     kind = "project" if destination == "projects" else "collection"
     y = PAGE_HEIGHT - 210
     c.setFont(FONT, 20)
-    for number in range(1, 21):
+    for number in range(first, last + 1):
         c.drawString(MARGIN_X, y, f"{number:02d}")
         c.line(MARGIN_X + 55, y - 4, PAGE_WIDTH - MARGIN_X, y - 4)
-        c.linkRect("", f"{kind}-{number:02d}", (MARGIN_X - 8, y - 12, PAGE_WIDTH - MARGIN_X + 8, y + 26), relative=0, thickness=0)
+        c.linkRect(
+            "",
+            f"{kind}-{number:02d}",
+            (MARGIN_X - 8, y - 12, PAGE_WIDTH - MARGIN_X + 8, y + 26),
+            relative=0,
+            thickness=0,
+        )
         y -= 70
+
+    # Direct switch between the two index pages, without PREV/NEXT controls.
+    c.setFont(FONT_BOLD, 16)
+    if page == 1:
+        label = "21-40"
+        target = f"{destination}-2"
+    else:
+        label = "01-20"
+        target = destination
+
+    switch_w = 110
+    switch_h = 34
+    switch_x = PAGE_WIDTH / 2 - switch_w / 2
+    switch_y = 105
+    c.roundRect(switch_x, switch_y, switch_w, switch_h, 5, stroke=1, fill=0)
+    c.drawCentredString(switch_x + switch_w / 2, switch_y + 10, label)
+    c.linkRect(
+        "",
+        target,
+        (switch_x, switch_y, switch_x + switch_w, switch_y + switch_h),
+        relative=0,
+        thickness=0,
+    )
 
     _draw_footer(c, year)
     _finish_page(c)
@@ -828,12 +868,14 @@ def generate_bujo(*, year: int, output: Path | str) -> Path:
     for page in range(1, 7):
         _draw_future_log(c, year, page)
 
-    _draw_index_page(c, year, title="Projects", destination="projects")
-    for number in range(1, 21):
+    _draw_index_page(c, year, title="Projects", destination="projects", page=1)
+    _draw_index_page(c, year, title="Projects", destination="projects", page=2)
+    for number in range(1, 41):
         _draw_collection_or_project_page(c, year, kind="project", number=number)
 
-    _draw_index_page(c, year, title="Collections", destination="collections")
-    for number in range(1, 21):
+    _draw_index_page(c, year, title="Collections", destination="collections", page=1)
+    _draw_index_page(c, year, title="Collections", destination="collections", page=2)
+    for number in range(1, 41):
         _draw_collection_or_project_page(c, year, kind="collection", number=number)
 
     for month in range(1, 13):
