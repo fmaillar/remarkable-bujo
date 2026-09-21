@@ -314,7 +314,6 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
     # Global collections / planning layers.
     shortcuts = [
         ("KEY", "key"),
-        ("INDEX", "index"),
         ("YEAR", f"year-{year}"),
         ("FUTURE", _future_log_destination(year, 1)),
         ("GOALS", "goals"),
@@ -860,7 +859,6 @@ def generate_bujo(*, year: int, output: Path | str) -> Path:
 
     _draw_home(c, year)
     _draw_key(c, year)
-    _draw_global_index(c, year)
     _draw_free_page(c, year, title="Goals / Intentions", destination="goals")
     _draw_free_page(c, year, title="Someday / Maybe", destination="someday")
     _draw_year(c, year)
