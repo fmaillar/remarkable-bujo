@@ -174,13 +174,15 @@ def _finish_page(c: canvas.Canvas) -> None:
 def _draw_key(c: canvas.Canvas, year: int) -> None:
     _new_page(c, "key")
     _draw_header(c, "Key", str(year))
+
     entries = [
-        ("•", "Task"),
-        ("×", "Completed task"),
+        ("task", "Task"),
+        ("done", "Completed task"),
+        ("cancelled", "Cancelled task"),
         (">", "Migrated task"),
         ("<", "Scheduled task"),
-        ("–", "Note"),
-        ("○", "Event"),
+        ("-", "Note"),
+        ("event", "Event"),
         ("^", "Appointment"),
         ("/", "Delegated task"),
         ("\\", "Task in progress"),
@@ -192,15 +194,48 @@ def _draw_key(c: canvas.Canvas, year: int) -> None:
         ("*", "Priority / important"),
         ("!", "Inspiration / insight"),
     ]
-    y = PAGE_HEIGHT - 240
+
+    y = PAGE_HEIGHT - 220
+    symbol_x = MARGIN_X + 18
+    label_x = MARGIN_X + 90
+    row_h = 70
+
     for symbol, label in entries:
-        c.setFont(FONT_BOLD, 30)
-        c.drawString(MARGIN_X, y, symbol)
-        c.setFont(FONT, 24)
-        c.drawString(MARGIN_X + 70, y, label)
-        y -= 78
-    c.setFont(FONT, 18)
-    c.drawString(MARGIN_X, y - 10, "Use only the symbols that remain useful in practice.")
+        c.saveState()
+
+        if symbol == "task":
+            c.setFillGray(0)
+            c.circle(symbol_x + 8, y + 6, 5, stroke=0, fill=1)
+
+        elif symbol == "done":
+            c.setFont(FONT_BOLD, 26)
+            c.drawString(symbol_x, y - 2, "x")
+
+        elif symbol == "cancelled":
+            # A task marker crossed out to represent cancellation.
+            c.setFillGray(0)
+            c.circle(symbol_x + 8, y + 6, 5, stroke=0, fill=1)
+            c.setLineWidth(2)
+            c.line(symbol_x - 3, y + 6, symbol_x + 23, y + 6)
+
+        elif symbol == "event":
+            # Draw the event marker explicitly so it stays a true empty circle
+            # regardless of PDF font Unicode coverage.
+            c.setLineWidth(2)
+            c.circle(symbol_x + 8, y + 6, 7, stroke=1, fill=0)
+
+        else:
+            c.setFont(FONT_BOLD, 26)
+            c.drawString(symbol_x, y - 2, symbol)
+
+        c.restoreState()
+
+        c.setFont(FONT, 23)
+        c.drawString(label_x, y, label)
+        y -= row_h
+
+    c.setFont(FONT, 17)
+    c.drawString(MARGIN_X, y - 2, "Use only the symbols that remain useful in practice.")
     _draw_footer(c, year)
     _finish_page(c)
 
