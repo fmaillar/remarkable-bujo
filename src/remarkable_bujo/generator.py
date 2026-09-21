@@ -242,36 +242,135 @@ def _draw_collection_or_project_page(c: canvas.Canvas, year: int, *, kind: str, 
 
 
 def _draw_home(c: canvas.Canvas, year: int) -> None:
-    _new_page(c, "home")
-    c.setFont(FONT_BOLD, 68)
-    c.drawString(MARGIN_X, PAGE_HEIGHT - 220, f"Bullet Journal {year}")
+    """Draw the first-page navigation hub.
 
-    items = [
+    Daily logs are intentionally omitted: the page exposes the complete BuJo
+    structure without turning into a 365-entry date index.
+    """
+    _new_page(c, "home")
+    c.setFont(FONT_BOLD, 54)
+    c.drawString(MARGIN_X, PAGE_HEIGHT - 105, f"Bullet Journal {year}")
+    c.setFont(FONT, 18)
+    c.drawRightString(PAGE_WIDTH - MARGIN_X, PAGE_HEIGHT - 100, "NAVIGATION HUB")
+
+    # Global collections / planning layers.
+    shortcuts = [
         ("KEY", "key"),
         ("INDEX", "index"),
         ("YEAR", f"year-{year}"),
-        ("FUTURE LOG", _future_log_destination(year, 1)),
-        ("GOALS / INTENTIONS", "goals"),
-        ("SOMEDAY / MAYBE", "someday"),
+        ("FUTURE", _future_log_destination(year, 1)),
+        ("GOALS", "goals"),
+        ("SOMEDAY", "someday"),
         ("PROJECTS", "projects"),
         ("COLLECTIONS", "collections"),
-        ("ANNUAL REFLECTION", f"annual-reflection-{year}"),
+        ("ANNUAL REF.", f"annual-reflection-{year}"),
     ]
-    y = PAGE_HEIGHT - 350
-    for label, destination in items:
-        c.setFont(FONT_BOLD, 32)
-        c.drawString(MARGIN_X, y, label)
+    shortcut_y = PAGE_HEIGHT - 170
+    x = MARGIN_X
+    c.setFont(FONT_BOLD, 17)
+    for label, destination in shortcuts:
+        width = max(86.0, c.stringWidth(label, FONT_BOLD, 17) + 28)
+        if x + width > PAGE_WIDTH - MARGIN_X:
+            x = MARGIN_X
+            shortcut_y -= 46
+        c.roundRect(x, shortcut_y - 10, width, 32, 5, stroke=1, fill=0)
+        c.drawCentredString(x + width / 2, shortcut_y, label)
         c.linkRect(
             "",
             destination,
-            (MARGIN_X - 8, y - 12, MARGIN_X + 420, y + 38),
+            (x, shortcut_y - 10, x + width, shortcut_y + 22),
             relative=0,
             thickness=0,
         )
-        y -= 72
+        x += width + 12
 
-    c.setFont(FONT, 18)
-    c.drawString(MARGIN_X, MARGIN_BOTTOM, "Minimal. Hyperlinked. Reproducible.")
+    # One row per month.  Each row exposes the month calendar, monthly log,
+    # monthly reflection, weekly overview, and weekly log/reflection pages.
+    weeks = _all_weeks(year)
+    row_top = shortcut_y - 78
+    row_h = 116
+    month_x = MARGIN_X
+    nav_x = 260
+    weeks_x = 575
+
+    c.setFont(FONT, 14)
+    c.drawString(nav_x, row_top + 22, "MONTH")
+    c.drawString(weeks_x, row_top + 22, "WEEK  /  LOG-REF")
+    c.line(MARGIN_X, row_top + 12, PAGE_WIDTH - MARGIN_X, row_top + 12)
+
+    for month in range(1, 13):
+        y = row_top - (month - 1) * row_h
+
+        c.setFont(FONT_BOLD, 22)
+        c.drawString(month_x, y - 28, MONTH_NAMES[month].upper())
+
+        links = [
+            ("CAL", _month_destination(year, month)),
+            ("LOG", _monthly_log_destination(year, month)),
+            ("REF", _reflection_destination(year, month)),
+        ]
+        x = nav_x
+        c.setFont(FONT_BOLD, 15)
+        for label, destination in links:
+            w = 70
+            c.drawCentredString(x + w / 2, y - 27, label)
+            c.linkRect(
+                "",
+                destination,
+                (x, y - 43, x + w, y - 10),
+                relative=0,
+                thickness=0,
+            )
+            x += w + 12
+
+        # A week is listed under every month it intersects.  This makes
+        # cross-month ISO weeks discoverable from either side of the boundary.
+        month_weeks = []
+        for key in weeks:
+            week_start = _week_start(key)
+            week_days = [week_start + timedelta(days=i) for i in range(7)]
+            if any(d.year == year and d.month == month for d in week_days):
+                month_weeks.append(key)
+
+        x = weeks_x
+        c.setFont(FONT, 14)
+        for key in month_weeks:
+            week_label = key.label
+            week_w = 48
+            c.drawString(x, y - 25, week_label)
+            c.linkRect(
+                "",
+                key.destination,
+                (x - 4, y - 40, x + week_w, y - 8),
+                relative=0,
+                thickness=0,
+            )
+
+            log_x = x + week_w + 2
+            c.setFont(FONT_BOLD, 12)
+            c.drawString(log_x, y - 25, "R")
+            c.linkRect(
+                "",
+                _weekly_log_destination(key),
+                (log_x - 4, y - 40, log_x + 20, y - 8),
+                relative=0,
+                thickness=0,
+            )
+            c.setFont(FONT, 14)
+            x += 84
+
+        c.setFont(FONT, 11)
+        c.drawString(weeks_x, y - 57, "W = weekly overview    R = weekly log / reflection")
+        c.setStrokeGray(0.75)
+        c.line(MARGIN_X, y - 72, PAGE_WIDTH - MARGIN_X, y - 72)
+        c.setStrokeGray(0)
+
+    c.setFont(FONT, 13)
+    c.drawString(
+        MARGIN_X,
+        MARGIN_BOTTOM - 5,
+        "Daily Logs are reached from month calendars, monthly logs, or weekly pages.",
+    )
     _finish_page(c)
 
 
