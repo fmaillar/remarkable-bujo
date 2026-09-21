@@ -105,22 +105,35 @@ def _draw_header(c: canvas.Canvas, title: str, subtitle: str | None = None) -> N
 
 def _draw_footer(c: canvas.Canvas, year: int, *, left: str = "HOME", right: str = "YEAR") -> None:
     y = MARGIN_BOTTOM - 26
-    c.setFont(FONT, 16)
 
-    c.drawString(MARGIN_X, y, left)
+    # Persistent button back to page 1 / navigation hub.
+    home_w = 118
+    home_h = 34
+    home_x = MARGIN_X
+    home_y = y - 10
+    c.setFont(FONT_BOLD, 15)
+    c.roundRect(home_x, home_y, home_w, home_h, 5, stroke=1, fill=0)
+    c.drawCentredString(home_x + home_w / 2, home_y + 10, "HOME")
     c.linkRect(
         "",
         "home",
-        (MARGIN_X - 8, y - 8, MARGIN_X + 70, y + 22),
+        (home_x, home_y, home_x + home_w, home_y + home_h),
         relative=0,
         thickness=0,
     )
 
-    c.drawRightString(PAGE_WIDTH - MARGIN_X, y, right)
+    # Year shortcut stays on the opposite side.
+    c.setFont(FONT_BOLD, 15)
+    year_w = 96
+    year_h = 34
+    year_x = PAGE_WIDTH - MARGIN_X - year_w
+    year_y = home_y
+    c.roundRect(year_x, year_y, year_w, year_h, 5, stroke=1, fill=0)
+    c.drawCentredString(year_x + year_w / 2, year_y + 10, right)
     c.linkRect(
         "",
         f"year-{year}",
-        (PAGE_WIDTH - MARGIN_X - 70, y - 8, PAGE_WIDTH - MARGIN_X + 8, y + 22),
+        (year_x, year_y, year_x + year_w, year_y + year_h),
         relative=0,
         thickness=0,
     )
