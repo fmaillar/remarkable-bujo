@@ -65,6 +65,18 @@ def _reflection_destination(year: int, month: int) -> str:
     return f"reflection-{year:04d}-{month:02d}"
 
 
+def _monthly_log_destination(year: int, month: int) -> str:
+    return f"monthly-log-{year:04d}-{month:02d}"
+
+
+def _future_log_destination(year: int, page: int) -> str:
+    return f"future-log-{year:04d}-{page:02d}"
+
+
+def _weekly_log_destination(key: WeekKey) -> str:
+    return f"weekly-log-{key.iso_year:04d}-{key.iso_week:02d}"
+
+
 def _all_days(year: int) -> list[date]:
     first = date(year, 1, 1)
     last = date(year, 12, 31)
@@ -151,6 +163,7 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
 
     items = [
         ("YEAR", f"year-{year}"),
+        ("FUTURE LOG", _future_log_destination(year, 1)),
         ("PROJECTS", "projects"),
         ("COLLECTIONS", "collections"),
         ("ANNUAL REFLECTION", f"annual-reflection-{year}"),
@@ -209,6 +222,105 @@ def _draw_year(c: canvas.Canvas, year: int) -> None:
             thickness=0,
         )
 
+    c.setFont(FONT_BOLD, 18)
+    c.drawString(MARGIN_X, 110, "FUTURE LOG")
+    c.linkRect(
+        "",
+        _future_log_destination(year, 1),
+        (MARGIN_X - 8, 94, MARGIN_X + 150, 132),
+        relative=0,
+        thickness=0,
+    )
+
+    _draw_footer(c, year)
+    _finish_page(c)
+
+
+def _draw_future_log(c: canvas.Canvas, year: int, page: int) -> None:
+    start_month = (page - 1) * 2 + 1
+    end_month = min(start_month + 1, 12)
+    _new_page(c, _future_log_destination(year, page))
+    _draw_header(c, "Future Log", f"{year} · {start_month:02d}-{end_month:02d}")
+
+    top = PAGE_HEIGHT - 210
+    bottom = 180
+    gap = 42
+    section_h = (top - bottom - gap) / 2
+
+    for offset, month in enumerate((start_month, end_month)):
+        y1 = top - offset * (section_h + gap)
+        y0 = y1 - section_h
+
+        c.setFont(FONT_BOLD, 28)
+        c.drawString(MARGIN_X, y1 - 34, MONTH_NAMES[month])
+
+        c.setFont(FONT, 16)
+        c.drawRightString(PAGE_WIDTH - MARGIN_X, y1 - 32, "MONTH")
+        c.linkRect(
+            "",
+            _month_destination(year, month),
+            (PAGE_WIDTH - MARGIN_X - 90, y1 - 50, PAGE_WIDTH - MARGIN_X + 8, y1 - 12),
+            relative=0,
+            thickness=0,
+        )
+
+        _draw_dot_grid(
+            c,
+            top=y1 - 78,
+            bottom=y0 + 10,
+            spacing=36.0,
+        )
+
+    nav_y = 112
+    c.setFont(FONT, 18)
+    if page > 1:
+        c.drawString(MARGIN_X, nav_y, "< PREV")
+        c.linkRect(
+            "",
+            _future_log_destination(year, page - 1),
+            (MARGIN_X - 8, nav_y - 8, MARGIN_X + 100, nav_y + 24),
+            relative=0,
+            thickness=0,
+        )
+    if page < 6:
+        c.drawRightString(PAGE_WIDTH - MARGIN_X, nav_y, "NEXT >")
+        c.linkRect(
+            "",
+            _future_log_destination(year, page + 1),
+            (PAGE_WIDTH - MARGIN_X - 110, nav_y - 8, PAGE_WIDTH - MARGIN_X + 8, nav_y + 24),
+            relative=0,
+            thickness=0,
+        )
+
+    _draw_footer(c, year)
+    _finish_page(c)
+
+
+def _draw_monthly_log(c: canvas.Canvas, year: int, month: int) -> None:
+    _new_page(c, _monthly_log_destination(year, month))
+    _draw_header(c, f"{MONTH_NAMES[month]} log", str(year))
+
+    nav_y = PAGE_HEIGHT - 160
+    c.setFont(FONT, 18)
+    c.drawString(MARGIN_X, nav_y, "< CALENDAR")
+    c.linkRect(
+        "",
+        _month_destination(year, month),
+        (MARGIN_X - 8, nav_y - 8, MARGIN_X + 150, nav_y + 24),
+        relative=0,
+        thickness=0,
+    )
+
+    c.drawCentredString(PAGE_WIDTH / 2, nav_y, "MONTHLY LOG")
+    c.linkRect(
+        "",
+        _monthly_log_destination(year, month),
+        (PAGE_WIDTH / 2 - 85, nav_y - 8, PAGE_WIDTH / 2 + 85, nav_y + 24),
+        relative=0,
+        thickness=0,
+    )
+
+    _draw_dot_grid(c, top=PAGE_HEIGHT - 225)
     _draw_footer(c, year)
     _finish_page(c)
 
@@ -270,11 +382,21 @@ def _draw_month(c: canvas.Canvas, year: int, month: int) -> None:
 
     y = 230
     c.setFont(FONT_BOLD, 20)
-    c.drawString(MARGIN_X, y, "REFLECTION")
+
+    c.drawString(MARGIN_X, y, "MONTHLY LOG")
+    c.linkRect(
+        "",
+        _monthly_log_destination(year, month),
+        (MARGIN_X - 8, y - 10, MARGIN_X + 190, y + 28),
+        relative=0,
+        thickness=0,
+    )
+
+    c.drawRightString(PAGE_WIDTH - MARGIN_X, y, "REFLECTION")
     c.linkRect(
         "",
         _reflection_destination(year, month),
-        (MARGIN_X - 8, y - 10, MARGIN_X + 180, y + 28),
+        (PAGE_WIDTH - MARGIN_X - 190, y - 10, PAGE_WIDTH - MARGIN_X + 8, y + 28),
         relative=0,
         thickness=0,
     )
@@ -287,11 +409,11 @@ def _draw_week(c: canvas.Canvas, year: int, key: WeekKey, all_weeks: list[WeekKe
     _new_page(c, key.destination)
     start = _week_start(key)
     end = start + timedelta(days=6)
-    _draw_header(
-        c,
-        key.label,
-        f"{start:%d %b} - {end:%d %b %Y}",
-    )
+    if start.year == end.year:
+        period = f"{start:%d %b} - {end:%d %b %Y}"
+    else:
+        period = f"{start:%d %b %Y} - {end:%d %b %Y}"
+    _draw_header(c, key.label, period)
 
     top = PAGE_HEIGHT - 210
     bottom = 180
@@ -313,6 +435,16 @@ def _draw_week(c: canvas.Canvas, year: int, key: WeekKey, all_weeks: list[WeekKe
                 relative=0,
                 thickness=0,
             )
+
+    c.setFont(FONT_BOLD, 18)
+    c.drawCentredString(PAGE_WIDTH / 2, 146, "WEEKLY LOG / REFLECTION")
+    c.linkRect(
+        "",
+        _weekly_log_destination(key),
+        (PAGE_WIDTH / 2 - 135, 130, PAGE_WIDTH / 2 + 135, 170),
+        relative=0,
+        thickness=0,
+    )
 
     idx = all_weeks.index(key)
     nav_y = 112
@@ -340,6 +472,32 @@ def _draw_week(c: canvas.Canvas, year: int, key: WeekKey, all_weeks: list[WeekKe
             thickness=0,
         )
 
+    _draw_footer(c, year)
+    _finish_page(c)
+
+
+def _draw_weekly_log(c: canvas.Canvas, year: int, key: WeekKey) -> None:
+    _new_page(c, _weekly_log_destination(key))
+    start = _week_start(key)
+    end = start + timedelta(days=6)
+    if start.year == end.year:
+        period = f"{start:%d %b} - {end:%d %b %Y}"
+    else:
+        period = f"{start:%d %b %Y} - {end:%d %b %Y}"
+    _draw_header(c, f"{key.label} log / reflection", period)
+
+    nav_y = PAGE_HEIGHT - 160
+    c.setFont(FONT, 18)
+    c.drawString(MARGIN_X, nav_y, "< WEEK")
+    c.linkRect(
+        "",
+        key.destination,
+        (MARGIN_X - 8, nav_y - 8, MARGIN_X + 100, nav_y + 24),
+        relative=0,
+        thickness=0,
+    )
+
+    _draw_dot_grid(c, top=PAGE_HEIGHT - 225)
     _draw_footer(c, year)
     _finish_page(c)
 
@@ -455,14 +613,20 @@ def generate_bujo(*, year: int, output: Path | str) -> Path:
 
     _draw_home(c, year)
     _draw_year(c, year)
+
+    for page in range(1, 7):
+        _draw_future_log(c, year, page)
+
     _draw_index_page(c, year, title="Projects", destination="projects")
     _draw_index_page(c, year, title="Collections", destination="collections")
 
     for month in range(1, 13):
         _draw_month(c, year, month)
+        _draw_monthly_log(c, year, month)
 
     for key in weeks:
         _draw_week(c, year, key, weeks)
+        _draw_weekly_log(c, year, key)
 
     for day in days:
         _draw_day(c, year, day, days)
