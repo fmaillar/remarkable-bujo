@@ -9,8 +9,11 @@ The goal is to keep the Bullet Journal method while removing the physical page-c
 The first version generates a 2027 planner with:
 
 - year overview;
+- six Future Log pages (two months per page);
 - 12 monthly calendars;
-- ISO weekly pages;
+- one dedicated Monthly Log page per month;
+- ISO weekly overview pages;
+- one Weekly Log / Reflection page per ISO week;
 - one daily page per day;
 - monthly reflection pages;
 - an annual reflection page;
