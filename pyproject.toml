@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "remarkable-bujo"
+version = "0.1.0"
+description = "Generate a minimal hyperlinked Bullet Journal PDF for reMarkable tablets."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "GPL-3.0-or-later" }
+authors = [{ name = "Florian Maillard" }]
+dependencies = ["reportlab>=4.2"]
+
+[project.scripts]
+remarkable-bujo = "remarkable_bujo.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/remarkable_bujo"]
