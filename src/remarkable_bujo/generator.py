@@ -511,7 +511,7 @@ def _draw_monthly_log(c: canvas.Canvas, year: int, month: int) -> None:
 
     _draw_dot_grid(c, top=top - 42, bottom=bottom, left=split_x + 34)
     c.setFont(FONT_BOLD, 18)
-    c.drawString(split_x + 34, 142, "MIGRATE  >   SCHEDULE  <   DROP  /")
+    c.drawString(split_x + 34, 185, "MIGRATE  >   SCHEDULE  <   DROP  /")
     _draw_footer(c, year)
     _finish_page(c)
 
@@ -669,7 +669,7 @@ def _draw_weekly_log(c: canvas.Canvas, year: int, key: WeekKey) -> None:
     c.drawString(MARGIN_X, mid - 92, "What mattered?  What changes?  What moves forward?")
     _draw_dot_grid(c, top=mid - 132, bottom=190)
     c.setFont(FONT_BOLD, 18)
-    c.drawString(MARGIN_X, 145, "MIGRATE  >   SCHEDULE  <   DROP  /")
+    c.drawString(MARGIN_X, 188, "MIGRATE  >   SCHEDULE  <   DROP  /")
     _draw_footer(c, year)
     _finish_page(c)
 
