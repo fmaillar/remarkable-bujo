@@ -156,19 +156,108 @@ def _finish_page(c: canvas.Canvas) -> None:
     c.showPage()
 
 
+def _draw_key(c: canvas.Canvas, year: int) -> None:
+    _new_page(c, "key")
+    _draw_header(c, "Key", str(year))
+    entries = [
+        ("•", "Task"),
+        ("×", "Completed task"),
+        (">", "Migrated task"),
+        ("<", "Scheduled task"),
+        ("–", "Note"),
+        ("○", "Event"),
+        ("*", "Priority / important"),
+        ("!", "Inspiration / insight"),
+    ]
+    y = PAGE_HEIGHT - 240
+    for symbol, label in entries:
+        c.setFont(FONT_BOLD, 30)
+        c.drawString(MARGIN_X, y, symbol)
+        c.setFont(FONT, 24)
+        c.drawString(MARGIN_X + 70, y, label)
+        y -= 78
+    c.setFont(FONT, 18)
+    c.drawString(MARGIN_X, y - 10, "Use only the symbols that remain useful in practice.")
+    _draw_footer(c, year)
+    _finish_page(c)
+
+
+def _draw_global_index(c: canvas.Canvas, year: int) -> None:
+    _new_page(c, "index")
+    _draw_header(c, "Index", str(year))
+    items = [
+        ("Future Log", _future_log_destination(year, 1)),
+        ("Year", f"year-{year}"),
+        ("Goals / Intentions", "goals"),
+        ("Someday / Maybe", "someday"),
+        ("Projects", "projects"),
+        ("Collections", "collections"),
+        ("Annual Reflection", f"annual-reflection-{year}"),
+    ]
+    y = PAGE_HEIGHT - 210
+    c.setFont(FONT, 22)
+    for label, destination in items:
+        c.drawString(MARGIN_X, y, label)
+        c.drawRightString(PAGE_WIDTH - MARGIN_X, y, ">")
+        c.linkRect("", destination, (MARGIN_X - 8, y - 12, PAGE_WIDTH - MARGIN_X + 8, y + 30), relative=0, thickness=0)
+        c.line(MARGIN_X, y - 20, PAGE_WIDTH - MARGIN_X, y - 20)
+        y -= 72
+
+    c.setFont(FONT_BOLD, 20)
+    c.drawString(MARGIN_X, y - 10, "Collections / Projects")
+    y -= 65
+    c.setFont(FONT, 18)
+    for number in range(1, 11):
+        c.drawString(MARGIN_X, y, f"C{number:02d}")
+        c.linkRect("", f"collection-{number:02d}", (MARGIN_X - 8, y - 10, MARGIN_X + 75, y + 24), relative=0, thickness=0)
+        c.drawString(MARGIN_X + 250, y, f"P{number:02d}")
+        c.linkRect("", f"project-{number:02d}", (MARGIN_X + 240, y - 10, MARGIN_X + 325, y + 24), relative=0, thickness=0)
+        c.line(MARGIN_X + 80, y - 4, MARGIN_X + 220, y - 4)
+        c.line(MARGIN_X + 330, y - 4, PAGE_WIDTH - MARGIN_X, y - 4)
+        y -= 58
+    _draw_footer(c, year)
+    _finish_page(c)
+
+
+def _draw_free_page(c: canvas.Canvas, year: int, *, title: str, destination: str, subtitle: str | None = None) -> None:
+    _new_page(c, destination)
+    _draw_header(c, title, subtitle or str(year))
+    _draw_dot_grid(c, top=PAGE_HEIGHT - 190)
+    _draw_footer(c, year)
+    _finish_page(c)
+
+
+def _draw_collection_or_project_page(c: canvas.Canvas, year: int, *, kind: str, number: int) -> None:
+    destination = f"{kind}-{number:02d}"
+    title = f"{kind.capitalize()} {number:02d}"
+    _new_page(c, destination)
+    _draw_header(c, title, str(year))
+    c.setFont(FONT, 16)
+    index_dest = "collections" if kind == "collection" else "projects"
+    c.drawString(MARGIN_X, PAGE_HEIGHT - 160, "< INDEX")
+    c.linkRect("", index_dest, (MARGIN_X - 8, PAGE_HEIGHT - 178, MARGIN_X + 100, PAGE_HEIGHT - 136), relative=0, thickness=0)
+    _draw_dot_grid(c, top=PAGE_HEIGHT - 220)
+    _draw_footer(c, year)
+    _finish_page(c)
+
+
 def _draw_home(c: canvas.Canvas, year: int) -> None:
     _new_page(c, "home")
     c.setFont(FONT_BOLD, 68)
     c.drawString(MARGIN_X, PAGE_HEIGHT - 220, f"Bullet Journal {year}")
 
     items = [
+        ("KEY", "key"),
+        ("INDEX", "index"),
         ("YEAR", f"year-{year}"),
         ("FUTURE LOG", _future_log_destination(year, 1)),
+        ("GOALS / INTENTIONS", "goals"),
+        ("SOMEDAY / MAYBE", "someday"),
         ("PROJECTS", "projects"),
         ("COLLECTIONS", "collections"),
         ("ANNUAL REFLECTION", f"annual-reflection-{year}"),
     ]
-    y = PAGE_HEIGHT - 430
+    y = PAGE_HEIGHT - 350
     for label, destination in items:
         c.setFont(FONT_BOLD, 32)
         c.drawString(MARGIN_X, y, label)
@@ -179,7 +268,7 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
             relative=0,
             thickness=0,
         )
-        y -= 90
+        y -= 72
 
     c.setFont(FONT, 18)
     c.drawString(MARGIN_X, MARGIN_BOTTOM, "Minimal. Hyperlinked. Reproducible.")
@@ -303,24 +392,33 @@ def _draw_monthly_log(c: canvas.Canvas, year: int, month: int) -> None:
     nav_y = PAGE_HEIGHT - 160
     c.setFont(FONT, 18)
     c.drawString(MARGIN_X, nav_y, "< CALENDAR")
-    c.linkRect(
-        "",
-        _month_destination(year, month),
-        (MARGIN_X - 8, nav_y - 8, MARGIN_X + 150, nav_y + 24),
-        relative=0,
-        thickness=0,
-    )
+    c.linkRect("", _month_destination(year, month), (MARGIN_X - 8, nav_y - 8, MARGIN_X + 150, nav_y + 24), relative=0, thickness=0)
+    c.drawRightString(PAGE_WIDTH - MARGIN_X, nav_y, "REFLECTION >")
+    c.linkRect("", _reflection_destination(year, month), (PAGE_WIDTH - MARGIN_X - 150, nav_y - 8, PAGE_WIDTH - MARGIN_X + 8, nav_y + 24), relative=0, thickness=0)
 
-    c.drawCentredString(PAGE_WIDTH / 2, nav_y, "MONTHLY LOG")
-    c.linkRect(
-        "",
-        _monthly_log_destination(year, month),
-        (PAGE_WIDTH / 2 - 85, nav_y - 8, PAGE_WIDTH / 2 + 85, nav_y + 24),
-        relative=0,
-        thickness=0,
-    )
+    split_x = PAGE_WIDTH * 0.46
+    top = PAGE_HEIGHT - 225
+    bottom = 185
+    c.line(split_x, bottom, split_x, top)
 
-    _draw_dot_grid(c, top=PAGE_HEIGHT - 225)
+    c.setFont(FONT_BOLD, 22)
+    c.drawString(MARGIN_X, top, "CALENDAR")
+    c.drawString(split_x + 34, top, "TASKS")
+
+    _, days_in_month = calendar.monthrange(year, month)
+    y = top - 48
+    row = (top - bottom - 60) / 31
+    c.setFont(FONT, 17)
+    for day_num in range(1, days_in_month + 1):
+        d = date(year, month, day_num)
+        c.drawString(MARGIN_X, y, f"{day_num:02d} {WEEKDAY_NAMES[d.weekday()]}")
+        c.line(MARGIN_X + 95, y - 4, split_x - 20, y - 4)
+        c.linkRect("", _day_destination(d), (MARGIN_X - 6, y - 10, split_x - 10, y + 20), relative=0, thickness=0)
+        y -= row
+
+    _draw_dot_grid(c, top=top - 42, bottom=bottom, left=split_x + 34)
+    c.setFont(FONT_BOLD, 18)
+    c.drawString(split_x + 34, 142, "MIGRATE  >   SCHEDULE  <   DROP  /")
     _draw_footer(c, year)
     _finish_page(c)
 
@@ -489,15 +587,22 @@ def _draw_weekly_log(c: canvas.Canvas, year: int, key: WeekKey) -> None:
     nav_y = PAGE_HEIGHT - 160
     c.setFont(FONT, 18)
     c.drawString(MARGIN_X, nav_y, "< WEEK")
-    c.linkRect(
-        "",
-        key.destination,
-        (MARGIN_X - 8, nav_y - 8, MARGIN_X + 100, nav_y + 24),
-        relative=0,
-        thickness=0,
-    )
+    c.linkRect("", key.destination, (MARGIN_X - 8, nav_y - 8, MARGIN_X + 100, nav_y + 24), relative=0, thickness=0)
 
-    _draw_dot_grid(c, top=PAGE_HEIGHT - 225)
+    top = PAGE_HEIGHT - 225
+    mid = 720
+    c.setFont(FONT_BOLD, 22)
+    c.drawString(MARGIN_X, top, "LOG / NOTES")
+    _draw_dot_grid(c, top=top - 44, bottom=mid + 35)
+
+    c.line(MARGIN_X, mid, PAGE_WIDTH - MARGIN_X, mid)
+    c.setFont(FONT_BOLD, 22)
+    c.drawString(MARGIN_X, mid - 48, "REFLECTION / MIGRATION")
+    c.setFont(FONT, 18)
+    c.drawString(MARGIN_X, mid - 92, "What mattered?  What changes?  What moves forward?")
+    _draw_dot_grid(c, top=mid - 132, bottom=190)
+    c.setFont(FONT_BOLD, 18)
+    c.drawString(MARGIN_X, 145, "MIGRATE  >   SCHEDULE  <   DROP  /")
     _draw_footer(c, year)
     _finish_page(c)
 
@@ -563,16 +668,18 @@ def _draw_reflection(c: canvas.Canvas, year: int, month: int) -> None:
     _draw_header(c, f"{MONTH_NAMES[month]} reflection", str(year))
 
     c.setFont(FONT, 18)
-    c.drawString(MARGIN_X, PAGE_HEIGHT - 160, "< MONTH")
-    c.linkRect(
-        "",
-        _month_destination(year, month),
-        (MARGIN_X - 8, PAGE_HEIGHT - 178, MARGIN_X + 120, PAGE_HEIGHT - 136),
-        relative=0,
-        thickness=0,
-    )
+    c.drawString(MARGIN_X, PAGE_HEIGHT - 160, "< MONTHLY LOG")
+    c.linkRect("", _monthly_log_destination(year, month), (MARGIN_X - 8, PAGE_HEIGHT - 178, MARGIN_X + 170, PAGE_HEIGHT - 136), relative=0, thickness=0)
 
-    _draw_dot_grid(c, top=PAGE_HEIGHT - 220)
+    sections = [
+        ("WHAT HAPPENED", 1450, 1120),
+        ("WHAT MATTERED / LEARNED", 1060, 730),
+        ("MIGRATE / SCHEDULE / DROP", 670, 340),
+    ]
+    for title, top, bottom in sections:
+        c.setFont(FONT_BOLD, 20)
+        c.drawString(MARGIN_X, top, title)
+        _draw_dot_grid(c, top=top - 42, bottom=bottom)
     _draw_footer(c, year)
     _finish_page(c)
 
@@ -581,11 +688,13 @@ def _draw_index_page(c: canvas.Canvas, year: int, *, title: str, destination: st
     _new_page(c, destination)
     _draw_header(c, title, str(year))
 
+    kind = "project" if destination == "projects" else "collection"
     y = PAGE_HEIGHT - 210
     c.setFont(FONT, 20)
     for number in range(1, 21):
         c.drawString(MARGIN_X, y, f"{number:02d}")
         c.line(MARGIN_X + 55, y - 4, PAGE_WIDTH - MARGIN_X, y - 4)
+        c.linkRect("", f"{kind}-{number:02d}", (MARGIN_X - 8, y - 12, PAGE_WIDTH - MARGIN_X + 8, y + 26), relative=0, thickness=0)
         y -= 70
 
     _draw_footer(c, year)
@@ -595,7 +704,16 @@ def _draw_index_page(c: canvas.Canvas, year: int, *, title: str, destination: st
 def _draw_annual_reflection(c: canvas.Canvas, year: int) -> None:
     _new_page(c, f"annual-reflection-{year}")
     _draw_header(c, "Annual reflection", str(year))
-    _draw_dot_grid(c, top=PAGE_HEIGHT - 200)
+    sections = [
+        ("WHAT HAPPENED", 1510, 1210),
+        ("WHAT MATTERED / LEARNED", 1150, 850),
+        ("WHAT TO CARRY FORWARD", 790, 490),
+        ("WHAT TO LET GO", 430, 180),
+    ]
+    for title, top, bottom in sections:
+        c.setFont(FONT_BOLD, 20)
+        c.drawString(MARGIN_X, top, title)
+        _draw_dot_grid(c, top=top - 42, bottom=bottom)
     _draw_footer(c, year)
     _finish_page(c)
 
@@ -612,13 +730,22 @@ def generate_bujo(*, year: int, output: Path | str) -> Path:
     c.setAuthor("remarkable-bujo")
 
     _draw_home(c, year)
+    _draw_key(c, year)
+    _draw_global_index(c, year)
+    _draw_free_page(c, year, title="Goals / Intentions", destination="goals")
+    _draw_free_page(c, year, title="Someday / Maybe", destination="someday")
     _draw_year(c, year)
 
     for page in range(1, 7):
         _draw_future_log(c, year, page)
 
     _draw_index_page(c, year, title="Projects", destination="projects")
+    for number in range(1, 21):
+        _draw_collection_or_project_page(c, year, kind="project", number=number)
+
     _draw_index_page(c, year, title="Collections", destination="collections")
+    for number in range(1, 21):
+        _draw_collection_or_project_page(c, year, kind="collection", number=number)
 
     for month in range(1, 13):
         _draw_month(c, year, month)
