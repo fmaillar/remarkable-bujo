@@ -474,27 +474,6 @@ def _draw_future_log(c: canvas.Canvas, year: int, page: int) -> None:
             spacing=36.0,
         )
 
-    nav_y = 112
-    c.setFont(FONT, 18)
-    if page > 1:
-        c.drawString(MARGIN_X, nav_y, "< PREV")
-        c.linkRect(
-            "",
-            _future_log_destination(year, page - 1),
-            (MARGIN_X - 8, nav_y - 8, MARGIN_X + 100, nav_y + 24),
-            relative=0,
-            thickness=0,
-        )
-    if page < 6:
-        c.drawRightString(PAGE_WIDTH - MARGIN_X, nav_y, "NEXT >")
-        c.linkRect(
-            "",
-            _future_log_destination(year, page + 1),
-            (PAGE_WIDTH - MARGIN_X - 110, nav_y - 8, PAGE_WIDTH - MARGIN_X + 8, nav_y + 24),
-            relative=0,
-            thickness=0,
-        )
-
     _draw_footer(c, year)
     _finish_page(c)
 
@@ -658,32 +637,6 @@ def _draw_week(c: canvas.Canvas, year: int, key: WeekKey, all_weeks: list[WeekKe
         thickness=0,
     )
 
-    idx = all_weeks.index(key)
-    nav_y = 112
-    c.setFont(FONT, 18)
-
-    if idx > 0:
-        prev_key = all_weeks[idx - 1]
-        c.drawString(MARGIN_X, nav_y, f"< {prev_key.label}")
-        c.linkRect(
-            "",
-            prev_key.destination,
-            (MARGIN_X - 8, nav_y - 8, MARGIN_X + 90, nav_y + 24),
-            relative=0,
-            thickness=0,
-        )
-
-    if idx + 1 < len(all_weeks):
-        next_key = all_weeks[idx + 1]
-        c.drawRightString(PAGE_WIDTH - MARGIN_X, nav_y, f"{next_key.label} >")
-        c.linkRect(
-            "",
-            next_key.destination,
-            (PAGE_WIDTH - MARGIN_X - 90, nav_y - 8, PAGE_WIDTH - MARGIN_X + 8, nav_y + 24),
-            relative=0,
-            thickness=0,
-        )
-
     _draw_footer(c, year)
     _finish_page(c)
 
@@ -750,27 +703,6 @@ def _draw_day(c: canvas.Canvas, year: int, day: date, days: list[date]) -> None:
         relative=0,
         thickness=0,
     )
-
-    idx = days.index(day)
-    if idx > 0:
-        c.drawString(MARGIN_X + 250, nav_y, "< PREV")
-        c.linkRect(
-            "",
-            _day_destination(days[idx - 1]),
-            (MARGIN_X + 240, nav_y - 8, MARGIN_X + 350, nav_y + 24),
-            relative=0,
-            thickness=0,
-        )
-
-    if idx + 1 < len(days):
-        c.drawRightString(PAGE_WIDTH - MARGIN_X, nav_y, "NEXT >")
-        c.linkRect(
-            "",
-            _day_destination(days[idx + 1]),
-            (PAGE_WIDTH - MARGIN_X - 120, nav_y - 8, PAGE_WIDTH - MARGIN_X + 8, nav_y + 24),
-            relative=0,
-            thickness=0,
-        )
 
     _draw_dot_grid(c, top=PAGE_HEIGHT - 225)
     _draw_footer(c, year)
