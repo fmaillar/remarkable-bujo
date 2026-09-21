@@ -263,9 +263,9 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
     structure without turning into a 365-entry date index.
     """
     _new_page(c, "home")
-    c.setFont(FONT_BOLD, 54)
+    c.setFont(FONT_BOLD, 56)
     c.drawString(MARGIN_X, PAGE_HEIGHT - 105, f"Bullet Journal {year}")
-    c.setFont(FONT, 18)
+    c.setFont(FONT, 19)
     c.drawRightString(PAGE_WIDTH - MARGIN_X, PAGE_HEIGHT - 100, "NAVIGATION HUB")
 
     # Global collections / planning layers.
@@ -282,9 +282,9 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
     ]
     shortcut_y = PAGE_HEIGHT - 170
     x = MARGIN_X
-    c.setFont(FONT_BOLD, 17)
+    c.setFont(FONT_BOLD, 18)
     for label, destination in shortcuts:
-        width = max(86.0, c.stringWidth(label, FONT_BOLD, 17) + 28)
+        width = max(86.0, c.stringWidth(label, FONT_BOLD, 18) + 28)
         if x + width > PAGE_WIDTH - MARGIN_X:
             x = MARGIN_X
             shortcut_y -= 46
@@ -308,7 +308,7 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
     nav_x = 260
     weeks_x = 575
 
-    c.setFont(FONT, 14)
+    c.setFont(FONT, 15)
     c.drawString(nav_x, row_top + 22, "MONTH")
     c.drawString(weeks_x, row_top + 22, "WEEK  /  LOG-REF")
     c.line(MARGIN_X, row_top + 12, PAGE_WIDTH - MARGIN_X, row_top + 12)
@@ -316,7 +316,7 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
     for month in range(1, 13):
         y = row_top - (month - 1) * row_h
 
-        c.setFont(FONT_BOLD, 22)
+        c.setFont(FONT_BOLD, 24)
         c.drawString(month_x, y - 28, MONTH_NAMES[month].upper())
 
         links = [
@@ -325,7 +325,7 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
             ("REF", _reflection_destination(year, month)),
         ]
         x = nav_x
-        c.setFont(FONT_BOLD, 15)
+        c.setFont(FONT_BOLD, 16)
         for label, destination in links:
             w = 70
             c.drawCentredString(x + w / 2, y - 27, label)
@@ -348,7 +348,7 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
                 month_weeks.append(key)
 
         x = weeks_x
-        c.setFont(FONT, 14)
+        c.setFont(FONT, 15)
         for key in month_weeks:
             week_label = key.label
             week_w = 48
@@ -362,7 +362,7 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
             )
 
             log_x = x + week_w + 2
-            c.setFont(FONT_BOLD, 12)
+            c.setFont(FONT_BOLD, 13)
             c.drawString(log_x, y - 25, "R")
             c.linkRect(
                 "",
@@ -371,16 +371,16 @@ def _draw_home(c: canvas.Canvas, year: int) -> None:
                 relative=0,
                 thickness=0,
             )
-            c.setFont(FONT, 14)
+            c.setFont(FONT, 15)
             x += 84
 
-        c.setFont(FONT, 11)
+        c.setFont(FONT, 12)
         c.drawString(weeks_x, y - 57, "W = weekly overview    R = weekly log / reflection")
         c.setStrokeGray(0.75)
         c.line(MARGIN_X, y - 72, PAGE_WIDTH - MARGIN_X, y - 72)
         c.setStrokeGray(0)
 
-    c.setFont(FONT, 13)
+    c.setFont(FONT, 14)
     c.drawString(
         MARGIN_X,
         MARGIN_BOTTOM - 5,
