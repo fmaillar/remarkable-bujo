@@ -6,8 +6,12 @@ The goal is to keep the Bullet Journal method while removing the physical page-c
 
 ## Current scope
 
-The first version generates a 2027 planner with:
+The generator provides a complete Bullet Journal structure with:
 
+- Key / rapid-logging legend;
+- global hyperlinked Index;
+- Goals / Intentions;
+- Someday / Maybe;
 - year overview;
 - six Future Log pages (two months per page);
 - 12 monthly calendars;
@@ -17,7 +21,9 @@ The first version generates a 2027 planner with:
 - one daily page per day;
 - monthly reflection pages;
 - an annual reflection page;
-- project and collection index pages;
+- project and collection indexes plus 20 writable pages for each;
+- weekly and monthly migration/review areas;
+- structured monthly and annual reflections;
 - internal PDF links for navigation;
 - a minimal dot-grid daily layout suitable for handwriting.
 
