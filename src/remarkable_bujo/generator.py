@@ -104,7 +104,9 @@ def _draw_header(c: canvas.Canvas, title: str, subtitle: str | None = None) -> N
 
 
 def _draw_footer(c: canvas.Canvas, year: int, *, left: str = "HOME", right: str = "YEAR") -> None:
-    y = MARGIN_BOTTOM - 26
+    # reMarkable 2: 226 dpi -> 1 cm ~= 89 px. Keep the footer clear of
+    # the bottom edge by moving both navigation buttons up by 1 cm.
+    y = MARGIN_BOTTOM - 26 + 89
 
     # Persistent button back to page 1 / navigation hub.
     home_w = 118
